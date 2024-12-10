@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-func readFile(path string) [][]byte {
+func readFileNOTWORKING(field *[][]byte, path string) {
 
 	file, err := os.Open(path)
 	if err != nil {
@@ -16,14 +16,28 @@ func readFile(path string) [][]byte {
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
-	var field [][]byte
 	for scanner.Scan() {
-		field = append(field, scanner.Bytes())
+		line := scanner.Bytes()
+		*field = append(*field, line)
 	}
-	return field
 }
 
-func outofbounds(row int, col int, side_length int) bool {
+func readFile(path string) []string {
+	file, err := os.Open(path)
+	if err != nil {
+		log.Fatal(err, "could not find file")
+	}
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	var lines []string
+	for scanner.Scan() {
+		line := scanner.Text()
+		lines = append(lines, line)
+	}
+	return lines
+}
+
+func outOfBounds(row int, col int, side_length int) bool {
 	if col < 0 || col > side_length-1 {
 		return true
 	}
@@ -33,36 +47,36 @@ func outofbounds(row int, col int, side_length int) bool {
 	return false
 }
 
-func FindString(row int, col int, dir Direction, field *[][]byte) bool {
-
+func findString(row int, col int, dir Direction, field *[]string) bool {
 	tofind := "XMAS"
 	tfield := *field
-	if tfield[row][col] != byte(tofind[0]) {
-		return false
-	}
+
 	current_row := row
 	current_col := col
-	for _, c := range tofind[1:] {
-		current_row += dir.x
-		current_col += dir.y
-		if outofbounds(current_row, current_col, len(tfield)) {
+	for _, c := range tofind {
+		if outOfBounds(current_row, current_col, len(tfield)) {
 			return false
 		}
 		if tfield[current_row][current_col] != byte(c) {
 			return false
 		}
+		current_row += dir.y
+		current_col += dir.x
 	}
-	fmt.Println("found xmas: ", row, col, dir)
 	return true
 }
 
 func main() {
+
+	var fieldNOTWORKING [][]byte
+	readFileNOTWORKING(&fieldNOTWORKING, "input.txt")
+
 	field := readFile("input.txt")
 	counter := 0
 	for row := range field {
 		for col := range field[0] {
-			for _, d := range Directions {
-				if FindString(row, col, d, &field) {
+			for _, dir := range Directions {
+				if findString(row, col, dir, &field) {
 					counter++
 				}
 			}
