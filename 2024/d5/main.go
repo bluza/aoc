@@ -63,7 +63,6 @@ func parseFile(path string) (Rules, []Update) {
 }
 
 func main() {
-
 	path := "input.txt"
 	rules, updates := parseFile(path)
 	sum := 0
